@@ -20,6 +20,12 @@
   <label for="password">
     password: <input type="password" name="password" id="password">
   </label>
+  <label for="email">
+    email: <input type="email" name="email" id="email">
+  </label>
+  <label for="display_name">
+    display_name: <input type="text" name="display_name" id="display_name">
+  </label>
   <button type="button" id="add_user">添加用户</button>
   <button type="button" id="login">用户登录</button>
   <br>
@@ -31,25 +37,29 @@
   </label>
   <button type="button" id="add_site">添加站点</button>
   <button type="button" id="get_websites">获取站点列表</button>
-  <ul id="website_list">
-
-  </ul>
+  <ul id="website_list"></ul>
   <script>
-    add_user.addEventListener('click', event => {
+    add_user.addEventListener('click', async () => {
       const body = {
-        username: "test",
-        password: "test",
-        email: "test@qq.com",
-        display_name: "test",
+        username: username.value,
+        password: password.value,
+        email: email.value,
+        display_name: display_name.value,
         avatar: "test",
       }
-      fetch("/api/user", {
+      const resp = await fetch("/api/user", {
         method: "post",
         body: JSON.stringify(body),
         headers: {
           "content-type": "application/json"
         }
-      })
+      });
+      const data = await resp.json();
+      if (data.code == 0) {
+        alert("add user success");
+      } else {
+        alert(data.msg);
+      }
     });
     login.addEventListener('click', async () => {
       const body = {
@@ -68,7 +78,7 @@
         alert("login success");
         localStorage.setItem("token", data.data);
       } else {
-        alert("login error");
+        alert(data.msg);
         localStorage.removeItem("token", data.data);
       }
     });
