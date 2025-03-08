@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Test Page</title>
+</head>
+
+<body>
+  <h1>welcome here!</h1>
+  <p>
+    <span id="vs"></span>
+    <span id="pv"></span>
+  </p>
+  <br>
+  <label for="username">
+    username: <input type="text" name="username" id="username">
+  </label>
+  <label for="password">
+    password: <input type="password" name="password" id="password">
+  </label>
+  <button type="button" id="add_user">添加用户</button>
+  <button type="button" id="login">用户登录</button>
+  <br>
+  <label for="website_name">
+    name: <input type="text" name="website_name" id="website_name">
+  </label>
+  <label for="domian">
+    domian: <input type="text" name="domian" id="domian">
+  </label>
+  <button type="button" id="add_site">添加站点</button>
+  <button type="button" id="get_websites">获取站点列表</button>
+  <ul id="website_list">
+
+  </ul>
+  <script>
+    add_user.addEventListener('click', event => {
+      const body = {
+        username: "test",
+        password: "test",
+        email: "test@qq.com",
+        display_name: "test",
+        avatar: "test",
+      }
+      fetch("/api/user", {
+        method: "post",
+        body: JSON.stringify(body),
+        headers: {
+          "content-type": "application/json"
+        }
+      })
+    });
+    login.addEventListener('click', async () => {
+      const body = {
+        username: username.value,
+        password: password.value,
+      }
+      const resp = await fetch("/api/user/token", {
+        method: "post",
+        body: JSON.stringify(body),
+        headers: {
+          "content-type": "application/json"
+        }
+      });
+      let data = await resp.json();
+      if (data.code == 0) {
+        alert("login success");
+        localStorage.setItem("token", data.data);
+      } else {
+        alert("login error");
+        localStorage.removeItem("token", data.data);
+      }
+    });
+    add_site.addEventListener('click', async event => {
+      const body = {
+        name: website_name.value,
+        domian: domian.value
+      }
+      const resp = await fetch("/api/site", {
+        method: "post",
+        body: JSON.stringify(body),
+        headers: {
+          "content-type": "application/json",
+          "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+      });
+      let data = await resp.json();
+      if (data.code != 0) {
+        alert(data.msg);
+      }
+    });
+    get_websites.addEventListener('click', async () => {
+      const resp = await fetch("/api/websites/list", {
+        method: "get",
+        headers: {
+          "content-type": "application/json",
+          "Authorization": "Bearer " + localStorage.getItem("token")
+        }
+      });
+      let data = await resp.json();
+      if (data.code != 0) {
+        alert(data.msg);
+      }
+      for (const item of data.data) {
+        let li = document.createElement('li');
+        li.textContent = item.name + " " + item.domain
+        let button = document.createElement("button");
+        button.textContent = "设置 id"
+        li.append(button)
+        website_list.append(li);
+        li.addEventListener('click', () => {
+          localStorage.setItem('website_id', item.id);
+        });
+      }
+    });
+    (async () => {
+      const resp = await fetch("/api/websites/" + localStorage.getItem("website_id") + "/stats");
+      const { data } = await resp.json();
+      vs.textContent = "访客：" + data.visitors;
+      pv.textContent = "浏览量：" + data.pageview;
+    })()
+  </script>
+</body>
+
+</html>
