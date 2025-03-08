@@ -1,5 +1,6 @@
 class WebTracker {
   website_id;
+  server_url;
   // 页面基本信息
   capturePageData() {
     return {
@@ -94,7 +95,7 @@ class WebTracker {
   // 数据发送方法
   sendTrackingData(data) {
     // 异步发送数据到服务器
-    fetch("http://localhost:3000/api/track", {
+    fetch(`${this.server_url}/api/track`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -111,6 +112,7 @@ class WebTracker {
     const { currentScript, referrer } = document;
     const attr = currentScript.getAttribute.bind(currentScript);
     this.website_id = attr("data-website-id");
+    this.server_url = attr("data-server-url");
     // 添加交互事件监听
     // document.addEventListener("click", (event) => {
     //   this.sendTrackingData({
